@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record Bowls Issued</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Record Bowls Issued</h1>
+
+        <form method="POST">
+            <label for="name">Select Name:</label>
+            <select id="name" name="name" required>
+                {% for person in people %}
+                    <option value="{{ person }}">{{ person }}</option>
+                {% endfor %}
+            </select>
+            <br><br>
+
+            <label for="bowls">Select Number of Bowls:</label>
+            <select id="bowls" name="bowls" required>
+                {% for i in range(10, 151, 10) %}
+                    <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+            <br><br>
+
+            <button type="submit">Submit</button>
+        </form>
+
+        {% if total_amount is not none %}
+            <p>Total Amount Paid After 70% Subsidy: ${{ total_amount }}</p>
+        {% endif %}
+    </div>
+</body>
+</html>
+
