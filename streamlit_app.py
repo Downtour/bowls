@@ -1,3 +1,5 @@
+import os
+from google.oauth2.service_account import Credentials
 import streamlit as st
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -5,8 +7,14 @@ import csv
 
 # Function to authenticate and connect to Google Sheets
 def authenticate_google_sheets():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name('path/to/your/credentials.json', scope)
+    # Get the path from the environment variable
+    creds_path = os.getenv('GOOGLE_SHEETS_CREDENTIALS_PATH')
+
+    if not creds_path:
+        raise Exception("The environment variable for credentials path is not set.")
+
+    # Use the credentials from the file
+    creds = Credentials.from_service_account_file(creds_path)
     client = gspread.authorize(creds)
     return client
 
