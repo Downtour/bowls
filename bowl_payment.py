@@ -1,64 +1,64 @@
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 import streamlit as st
+import pandas as pd
+import gspread
+from google.oauth2.service_account import Credentials
 
 
-# Authentication for Google Sheets API
-def authenticate_google_sheets():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name('hgfo8sq803asl9nusq0q0dnp8seigdq1.apps.googleusercontent.com.json', scope)
+# Streamlit secrets management: Store the credentials.json content in the secrets.toml file
+# Create a secrets.toml file in your Streamlit app with the content below:
+# [google]
+# credentials = "your_json_content_here"
+
+def authenticate_gspread():
+    # Fetch credentials from secrets
+    creds_json = st.secrets["google"]["credentials"]
+    creds = Credentials.from_service_account_info(creds_json)
+
+    # Authorize with gspread
     client = gspread.authorize(creds)
     return client
 
 
-# Create or access the Google Sheet
-def get_or_create_spreadsheet(client):
-    try:
-        # Open the existing spreadsheet by name
-        sheet = client.open('Bowl Payment Records').sheet1
-    except gspread.exceptions.SpreadsheetNotFound:
-        # If the sheet does not exist, create one
-        sheet = client.create('Bowl Payment Records').sheet1
-        # Add headers if creating the sheet
-        sheet.append_row(['Name', 'Number of Bowls', 'Original Price', 'Subsidized Price'])
-
-    return sheet
-
-def calculate_payment(number_of_bowls):
-    bowl_cost = 0.19
-    total_cost = bowl_cost * number_of_bowls
-    subsidized_cost = total_cost * 0.3  # 70% subsidy, so you pay 30%
-    return total_cost, subsidized_cost
+# Connect to the Google Sheets
+def update_sheet(client, name, bowls, amount_before_subsidy, amount_after_subsidy):
+    sheet = client.open('BowlsPaymentRecord')  # Open your sheet by name
+    worksheet = sheet.sheet1  # Access the first worksheet
+    worksheet.append_row([name, bowls, amount_before_subsidy, amount_after_subsidy])
 
 
+# Calculate the amount to pay after 70% subsidy
+def calculate_amount(bowls):
+    cost_per_bowl = 0.19
+    total_amount = bowls * cost_per_bowl
+    amount_after_subsidy = total_amount * 0.3  # 70% subsidy
+    return total_amount, amount_after_subsidy
+
+
+# Streamlit app
 def main():
-    st.title('Bowl Payment Calculator')
+    st.title("Bowls Payment Recorder")
 
-    # User inputs
-    name = st.text_input('Enter Name:')
-    number_of_bowls = st.number_input('Enter Number of Bowls:', min_value=1, step=1)
+    # Define a list of people (can be expanded as needed)
+    people = ["Micheal", "TKW", "CLE", "TAP"]
 
-    # Button to submit
-    if st.button('Calculate Payment'):
-        if name and number_of_bowls:
-            # Calculate the payment
-            total_cost, subsidized_cost = calculate_payment(number_of_bowls)
+    # Combo box for selecting person
+    name = st.selectbox("Select Person", people)
 
-            st.write(f'Total Cost: ${total_cost:.2f}')
-            st.write(f'Subsidized Cost (30% of Total): ${subsidized_cost:.2f}')
+    # Combo box for selecting number of bowls (with intervals of 10 between 10 and 150)
+    bowls = st.selectbox("Select Number of Bowls", [i for i in range(10, 151, 10)])
 
-            # Authenticate and get the spreadsheet
-            client = authenticate_google_sheets()
-            sheet = get_or_create_spreadsheet(client)
+    # Calculate the amount to pay
+    amount_before, amount_after = calculate_amount(bowls)
 
-            # Append the record to the Google Sheet
-            sheet.append_row([name, number_of_bowls, f"${total_cost:.2f}", f"${subsidized_cost:.2f}"])
+    st.write(f"Amount before subsidy: ${amount_before:.2f}")
+    st.write(f"Amount after 70% subsidy: ${amount_after:.2f}")
 
-            st.success('Record added to Google Sheets!')
-        else:
-            st.error('Please enter valid details.')
+    # Submit button to update the record
+    if st.button("Submit Record"):
+        client = authenticate_gspread()
+        update_sheet(client, name, bowls, amount_before, amount_after)
+        st.success("Record updated successfully!")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-
