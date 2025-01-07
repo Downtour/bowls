@@ -16,10 +16,7 @@ token_uri = google_creds["token_uri"]
 def authenticate_gspread():
     try:
         # Fetch the full credentials JSON string from Streamlit secrets
-        creds_json = st.secrets["google"]
-
-        # Print the fetched credentials (optional, just for debugging)
-        #st.write("Fetched credentials :", google_creds)
+        google_creds = st.secrets["google"]
 
         # Use the credentials to authorize with gspread
         creds = Credentials.from_service_account_info(google_creds)
