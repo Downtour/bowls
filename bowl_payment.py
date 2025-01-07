@@ -5,6 +5,13 @@ from google.oauth2.service_account import Credentials
 import json
 
 # Authenticate and fetch credentials from secrets
+google_creds = st.secrets["google"]
+project_id = google_creds["project_id"]
+private_key = google_creds["private_key"]
+client_email = google_creds["client_email"]
+client_id = google_creds["client_id"]
+auth_uri = google_creds["auth_uri"]
+token_uri = google_creds["token_uri"]
 
 def authenticate_gspread():
     try:
