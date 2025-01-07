@@ -2,25 +2,19 @@ import streamlit as st
 import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
+import json
 
 
-# Streamlit secrets management: Store the credentials.json content in the secrets.toml file
-# Create a secrets.toml file in your Streamlit app with the content below:
-# [google]
-# credentials = "your_json_content_here"
-google_credentials = {
-    "client_id": st.secrets["google"]["client_id"],
-    "project_id": st.secrets["google"]["project_id"],
-    "auth_uri": st.secrets["google"]["auth_uri"],
-    "token_uri": st.secrets["google"]["token_uri"],
-    "auth_provider_x509_cert_url": st.secrets["google"]["auth_provider_x509_cert_url"],
-    "client_secret": st.secrets["google"]["client_secret"]
-}
-
+# Authenticate and fetch credentials from secrets
 def authenticate_gspread():
-    # Fetch credentials from secrets
-    creds_json = st.secrets["google"]["credentials"]
-    creds = Credentials.from_service_account_info(google_credentials)
+    # Fetch the full credentials JSON string from Streamlit secrets
+    creds_json = st.secrets["google"]["credentials_json"]
+
+    # Load the JSON string into a dictionary
+    creds_dict = json.loads(creds_json)
+
+    # Use the credentials to authorize with gspread
+    creds = Credentials.from_service_account_info(creds_dict)
 
     # Authorize with gspread
     client = gspread.authorize(creds)
@@ -70,3 +64,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
