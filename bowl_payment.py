@@ -4,22 +4,36 @@ import gspread
 from google.oauth2.service_account import Credentials
 import json
 
-
 # Authenticate and fetch credentials from secrets
+
 def authenticate_gspread():
-    # Fetch the full credentials JSON string from Streamlit secrets
-    creds_json = st.secrets["google"]["credentials_json"]
+    try:
+        # Fetch the full credentials JSON string from Streamlit secrets
+        creds_json = st.secrets["google"]["credentials_json"]
 
-    # Load the JSON string into a dictionary
-    creds_dict = json.loads(creds_json)
+        # Print the fetched credentials (optional, just for debugging)
+        st.write("Fetched credentials JSON:", creds_json)
 
-    # Use the credentials to authorize with gspread
-    creds = Credentials.from_service_account_info(creds_dict)
+        # Load the JSON string into a dictionary
+        creds_dict = json.loads(creds_json)
 
-    # Authorize with gspread
-    client = gspread.authorize(creds)
-    return client
+        # Print the parsed credentials (optional, just for debugging)
+        st.write("Parsed credentials dictionary:", creds_dict)
 
+        # Use the credentials to authorize with gspread
+        creds = Credentials.from_service_account_info(creds_dict)
+
+        # Authorize with gspread
+        client = gspread.authorize(creds)
+        return client
+
+    except json.JSONDecodeError as e:
+        # Print the error message in case JSON decoding fails
+        st.error(f"JSONDecodeError: {str(e)}")
+    except Exception as e:
+        # Catch any other exceptions and display them
+        st.error(f"An error occurred: {str(e)}")
+        raise e
 
 # Connect to the Google Sheets
 def update_sheet(client, name, bowls, amount_before_subsidy, amount_after_subsidy):
