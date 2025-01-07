@@ -19,7 +19,7 @@ def authenticate_gspread():
         creds_json = st.secrets["google"]
 
         # Print the fetched credentials (optional, just for debugging)
-        st.write("Fetched credentials :", google_creds)
+        #st.write("Fetched credentials :", google_creds)
 
         # Use the credentials to authorize with gspread
         creds = Credentials.from_service_account_info(google_creds)
