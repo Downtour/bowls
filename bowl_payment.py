@@ -16,27 +16,18 @@ token_uri = google_creds["token_uri"]
 def authenticate_gspread():
     try:
         # Fetch the full credentials JSON string from Streamlit secrets
-        creds_json = st.secrets["google"]["credentials_json"]
+        creds_json = st.secrets["google"]
 
         # Print the fetched credentials (optional, just for debugging)
-        st.write("Fetched credentials JSON:", creds_json)
-
-        # Load the JSON string into a dictionary
-        creds_dict = json.loads(creds_json)
-
-        # Print the parsed credentials (optional, just for debugging)
-        st.write("Parsed credentials dictionary:", creds_dict)
+        st.write("Fetched credentials :", google_creds)
 
         # Use the credentials to authorize with gspread
-        creds = Credentials.from_service_account_info(creds_dict)
+        creds = Credentials.from_service_account_info(google_creds)
 
         # Authorize with gspread
         client = gspread.authorize(creds)
         return client
 
-    except json.JSONDecodeError as e:
-        # Print the error message in case JSON decoding fails
-        st.error(f"JSONDecodeError: {str(e)}")
     except Exception as e:
         # Catch any other exceptions and display them
         st.error(f"An error occurred: {str(e)}")
