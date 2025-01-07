@@ -2,24 +2,21 @@ import streamlit as st
 import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
+from google.auth.transport.requests import Request
 import json
 
-# Authenticate and fetch credentials from secrets
-google_creds = st.secrets["google"]
-project_id = google_creds["project_id"]
-private_key = google_creds["private_key"]
-client_email = google_creds["client_email"]
-client_id = google_creds["client_id"]
-auth_uri = google_creds["auth_uri"]
-token_uri = google_creds["token_uri"]
-
+# Authenticate and fetch credentials from Streamlit secrets
 def authenticate_gspread():
     try:
-        # Fetch the full credentials JSON string from Streamlit secrets
+        # Fetch the credentials securely from Streamlit secrets
         google_creds = st.secrets["google"]
 
-        # Use the credentials to authorize with gspread
+        # Use the credentials to create a Credentials object
         creds = Credentials.from_service_account_info(google_creds)
+
+        # Check if the credentials are valid, and refresh if needed
+        if creds.expired and creds.refresh_token:
+            creds.refresh(Request())  # This should refresh the token
 
         # Authorize with gspread
         client = gspread.authorize(creds)
@@ -36,14 +33,12 @@ def update_sheet(client, name, bowls, amount_before_subsidy, amount_after_subsid
     worksheet = sheet.sheet1  # Access the first worksheet
     worksheet.append_row([name, bowls, amount_before_subsidy, amount_after_subsidy])
 
-
 # Calculate the amount to pay after 70% subsidy
 def calculate_amount(bowls):
     cost_per_bowl = 0.19
     total_amount = bowls * cost_per_bowl
     amount_after_subsidy = total_amount * 0.3  # 70% subsidy
     return total_amount, amount_after_subsidy
-
 
 # Streamlit app
 def main():
@@ -70,7 +65,5 @@ def main():
         update_sheet(client, name, bowls, amount_before, amount_after)
         st.success("Record updated successfully!")
 
-
 if __name__ == "__main__":
     main()
-
