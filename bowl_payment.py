@@ -11,8 +11,14 @@ def authenticate_gspread():
         # Fetch the credentials securely from Streamlit secrets
         google_creds = st.secrets["google"]
 
-        # Use the credentials to create a Credentials object
-        creds = Credentials.from_service_account_info(google_creds)
+        # Define the required scopes for Google Sheets and Google Drive
+        SCOPES = [
+            "https://www.googleapis.com/auth/spreadsheets",  # Full access to Google Sheets
+            "https://www.googleapis.com/auth/drive"  # Full access to Google Drive
+        ]
+
+        # Create credentials from the service account information stored in Streamlit secrets
+        creds = Credentials.from_service_account_info(google_creds, scopes=SCOPES)
 
         # Check if the credentials are valid, and refresh if needed
         if creds.expired and creds.refresh_token:
