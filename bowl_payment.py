@@ -38,14 +38,9 @@ def update_sheet(client, name, bowls, amount_before_subsidy, amount_after_subsid
     try:
         # Try to open the spreadsheet
         sheet = client.open('BowlsPaymentRecord')
-    except gspread.exceptions.SpreadsheetNotFound:
+    except gspread.SpreadsheetNotFound:
         # If the sheet doesn't exist, create a new one
-        st.warning("Spreadsheet not found. Creating a new spreadsheet.")
         sheet = client.create('BowlsPaymentRecord')  # Create a new spreadsheet
-        # Create headers in the new sheet
-        worksheet = sheet.get_worksheet(0)
-        worksheet.append_row(['Name', 'Bowls', 'Amount Before Subsidy', 'Amount After Subsidy'])
-
     worksheet = sheet.sheet1  # Access the first worksheet
     # Append the new record to the sheet
     worksheet.append_row([name, bowls, amount_before_subsidy, amount_after_subsidy])
